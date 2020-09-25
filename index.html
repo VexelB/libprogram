@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Lib</title>  
+    <style>
+      .head {
+        background-color: #888;
+        color: white;
+      }
+      #main {
+        overflow: auto;
+        white-space: nowrap;
+      }
+      .modal {
+        display: none; /* Hidden by default */
+        position: fixed; /* Stay in place */
+        z-index: 1; /* Sit on top */
+        padding-top: 100px; /* Location of the box */
+        left: 0;
+        top: 0;
+        width: 100%; /* Full width */
+        height: 100%; /* Full height */
+        overflow: auto; /* Enable scroll if needed */
+        background-color: rgb(0,0,0); /* Fallback color */
+        background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+      }
+      .modal-content {
+        background-color: #fefefe;
+        margin: auto;
+        padding: 20px;
+        border: 1px solid #888;
+        width: 80%;
+        overflow: auto;
+      }
+      .table {
+        display: inline-block;
+        border: solid 1px black; 
+        padding: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="myModal" class="modal">
+      <div class = "modal-content">
+      <button id="addclose">Ок</button>
+      <button id="close">Отмена</button><br>
+      <div id="data1"></div>
+      <!-- <script src="db.js"></script> -->
+      </div>
+    </div>
+    <div id="shap">
+    <button id="add" >Добавить</button>
+    <button id="delete" >Удалить</button>
+    <button id="change">Изменить</button>
+    <input id="search">
+    </div>
+    <button id="createqr">QR</button>
+    <div id="qrModal" class="modal">
+      <div class = "modal-content">
+        <canvas id="canvas"></canvas>
+      </div>
+    </div>
+    <div id="main" style="height: 86vh;">
+      <div id="data">Выберете таблицу снизу</div>
+      <div id="amdata"></div>
+    </div>
+    <div id="alamount" style="height: 4vh;"></div>
+    <div id="footer">
+    </div>
+    <button id="mainbtn">Главная</button>
+    <script src="index.js"></script>
+    <!-- <canvas id="canvas"></canvas>
+    <script>
+      const QRCode = require('qrcode');
+      const canvas = document.getElementById('canvas');
+      QRCode.toCanvas(canvas, 'sample text', function (error) {
+        if (error) console.error(error)
+        // console.log('success!');
+      })
+    </script> -->
+  </body>
+</html>
