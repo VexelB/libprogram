@@ -43,11 +43,22 @@
   <body>
     <div id="myModal" class="modal">
       <div class = "modal-content">
-      <button id="addclose">Ок</button>
-      <button id="close">Отмена</button><br>
-      <div id="data1"></div>
-      <!-- <script src="db.js"></script> -->
+        <button id="addclose">Ок</button>
+        <button id="close">Отмена</button><br>
+        <div id = "divvideo" style = "display: none">
+          <div id="loadingMessage">🎥 Unable to access video stream (please make sure you have a webcam enabled)</div>
+          <canvas id="canvas" hidden></canvas>
+          <div id="output" hidden>
+            <div id="outputMessage">No QR code detected.</div>
+            <div hidden><b>Data:</b> <span id="outputData"></span></div>
+          </div>
+        </div>
+        <div id="data1"></div>
       </div>
+    </div>
+    <div id="shap1">
+      <button id="givebook">Выдать книгу</button>
+      <button id="takebook">Получить книгу</button>
     </div>
     <div id="shap">
     <button id="add" >Добавить</button>
@@ -70,14 +81,5 @@
     </div>
     <button id="mainbtn">Главная</button>
     <script src="index.js"></script>
-    <!-- <canvas id="canvas"></canvas>
-    <script>
-      const QRCode = require('qrcode');
-      const canvas = document.getElementById('canvas');
-      QRCode.toCanvas(canvas, 'sample text', function (error) {
-        if (error) console.error(error)
-        // console.log('success!');
-      })
-    </script> -->
   </body>
 </html>

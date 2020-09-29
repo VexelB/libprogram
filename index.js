@@ -2,6 +2,7 @@ const addbtn = document.getElementById("add");
 const chgbtn = document.getElementById("change");
 const delbtn = document.getElementById("delete");
 const shap = document.getElementById("shap");
+const shap1 = document.getElementById("shap1");
 const okbtn = document.getElementById("addclose");
 const clsbtn = document.getElementById("close");
 const search = document.getElementById("search");
@@ -50,6 +51,7 @@ search.addEventListener('change', () => {
 })
 
 function load() {
+    video = null;
     document.getElementById('amdata').innerHTML = "";
     let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
         if (err) {
@@ -74,6 +76,9 @@ function load() {
             sql += `'${head.fields[i]}',`
         }
         sql = sql.slice(0,sql.length-1) + ');'
+        if (head.table == 'TakeHistory') {
+            alert('Книга выдана')
+        }
     }
     else if (head.action == "delete") {
         sql += `DELETE from ${table} WHERE id = ${head.fields.id}`
@@ -100,6 +105,7 @@ function load() {
     }
     if (table) {
         shap.style.display = 'inline';
+        shap1.style.display = 'none';
         tstop.innerHTML = "";
         db.serialize(() => {
 
@@ -115,9 +121,21 @@ function load() {
             };
         })
         if (head.action == "order") {
-            db.each(`SELECT * from ${table} Order By ${head.order} LIMIT 50`, (err, row) => {
+            let sql = `SELECT * from ${table} Order By ${head.order} LIMIT 50`
+            if (head.order == 'own') {
+                sql = `SELECT * from ${table} Order By ${head.order} DESC LIMIT 50`
+            }
+            else if (head.order == 'id') {
+                sql = `SELECT * from ${table} LIMIT 50`
+            }
+            db.each(sql, (err, row) => {
                 for (let i in row) {
-                    document.getElementById(i).innerHTML += `<div class="row" id="row${row.id}">${row[i]}</div>  `;
+                    if (i == 'bibl') {
+                        document.getElementById(i).innerHTML += `<div class="row" id="row${row.id}">><div style="display:none;">${row[i]}</div></div>  `;
+                    }
+                    else {
+                        document.getElementById(i).innerHTML += `<div class="row" id="row${row.id}">${row[i]}</div>  `;
+                    }
                 };
                 document.querySelectorAll('.head').forEach( (x) => {
                     x.addEventListener('click', () => {
@@ -144,6 +162,9 @@ function load() {
                             document.querySelectorAll(`#${clicked}`).forEach( (x) => {
                                 x.style.backgroundColor = 'white';
                                 x.style.color = 'black';
+                                if (x.textContent.includes('>')) {
+                                    x.children[0].style.display = "none";
+                                }
                             })
                         }
                         if (clicked !== x.id) {
@@ -151,6 +172,9 @@ function load() {
                             let j = 0;
                             let body = document.querySelectorAll(`#${clicked}`);
                             for (let i in head.fields) {
+                                if (body[j].textContent.includes('>')) {
+                                    body[j].children[0].style.display = "inline";
+                                }
                                 head.fields[i] = body[j].textContent;
                                 j++;
                             }
@@ -364,13 +388,8 @@ function load() {
                 tables.push(row.name)
             }
         })
-        tstop.innerHTML = '<button id="givebook">Выдать книгу</button><button id="takebook">Получить книгу</button>';
-        document.getElementById('givebook').addEventListener('click', () => {
-
-        })
-        document.getElementById('takebook').addEventListener('click', () => {
-            
-        })
+        // tstop.innerHTML = '';
+        shap1.style.display = 'inline';
         shap.style.display = 'none';
     }
     db.close();    
@@ -399,6 +418,86 @@ addbtn.addEventListener('click', () => {
     // win.on('close', () => {
     //     win = null;
     // })
+    if (table == "TakeHistory") {
+        document.getElementById('divvideo').style.display = 'block'
+        let video = document.createElement("video");
+        const canvasElement = document.getElementById("canvas");
+        const canvas = canvasElement.getContext("2d");
+        const loadingMessage = document.getElementById("loadingMessage");
+        const outputContainer = document.getElementById("output");
+        const outputMessage = document.getElementById("outputMessage");
+        const outputData = document.getElementById("outputData");
+    
+        function drawLine(begin, end, color) {
+          canvas.beginPath();
+          canvas.moveTo(begin.x, begin.y);
+          canvas.lineTo(end.x, end.y);
+          canvas.lineWidth = 4;
+          canvas.strokeStyle = color;
+          canvas.stroke();
+        }
+    
+        // Use facingMode: environment to attemt to get the front camera on phones
+        navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(function(stream) {
+          video.srcObject = stream;
+          video.setAttribute("playsinline", true); // required to tell iOS safari we don't want fullscreen
+          video.play();
+          requestAnimationFrame(tick);
+        });
+    
+        function tick() {
+          loadingMessage.innerText = "⌛ Loading video..."
+          if (video.readyState === video.HAVE_ENOUGH_DATA) {
+            loadingMessage.hidden = true;
+            canvasElement.hidden = false;
+            outputContainer.hidden = false;
+    
+            canvasElement.height = video.videoHeight;
+            canvasElement.width = video.videoWidth;
+            canvas.drawImage(video, 0, 0, canvasElement.width, canvasElement.height);
+            var imageData = canvas.getImageData(0, 0, canvasElement.width, canvasElement.height);
+            var code = jsQR(imageData.data, imageData.width, imageData.height, {
+              inversionAttempts: "dontInvert",
+            });
+            if (code) {
+                video = null;
+                document.getElementById('divvideo').style.display = 'none'
+                let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+                if (err) {
+                  console.error(err.message);
+                }
+                db.get(`SELECT * from books where invid = "${code.data}"`, (err, row) => {
+                    if (err) {
+                        console.error(err);
+                    }
+                    let d = new Date();
+                    if (row.own == '0') {
+                        document.getElementById('inputinvid').value = row.id;
+                        document.getElementById('inputname').value = row.name;
+                        document.getElementById('inputwwhen').value = `${d.getDate()}.${d.getMonth()}.${d.getFullYear()}`
+                        let d2 = new Date(Date.parse(d)+1209600033)
+                        document.getElementById('inputqwhen').value = `${d2.getDate()}.${d2.getMonth()}.${d2.getFullYear()}`
+                        db.run(`UPDATE books SET own = "1" WHERE id = ${code.data}`)
+                    }
+                    else {
+                        db.run(`UPDATE books SET own = "0" WHERE id = ${code.data}`)
+                        db.run(`UPDATE TakeHistory SET return = "${d.getDate()}.${d.getMonth()}.${d.getFullYear()}" WHERE invid = ${code.data}`)
+                        clsbtn.click();
+                        load()
+                        alert('Книга сдана')
+                    }
+                })
+            });
+                
+            } else {
+                outputMessage.hidden = false;
+                outputData.parentElement.hidden = true;
+            }
+          }
+          requestAnimationFrame(tick);
+        }        
+    }
+
     head.table = table;
     head.action = "add";
     for (let i in head.fields) {
@@ -406,7 +505,7 @@ addbtn.addEventListener('click', () => {
     }
     for (let i in head.fields){
         if (datas.includes(i)) {
-            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id= 'input${i}'></div>`;
             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                 if (err) {
                   console.error(err.message);
@@ -419,7 +518,7 @@ addbtn.addEventListener('click', () => {
             })
         }
         else if (tables.includes(i)) {
-            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id= 'input${i}'></datalist></div>`;
             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                 if (err) {
                   console.error(err.message);
@@ -480,7 +579,7 @@ chgbtn.addEventListener('click', () => {
         head.oldid = head.fields.id;
         for (let i in head.fields){
             if (datas.includes(i)) {
-                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id = 'input${i}'></datalist></div>`;
                 let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                     if (err) {
                       console.error(err.message);
@@ -493,7 +592,7 @@ chgbtn.addEventListener('click', () => {
                 })
             }
             else if (tables.includes(i)) {
-                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'> <datalist id= 'input${i}'></datalist></div>`;
                 let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                     if (err) {
                       console.error(err.message);
@@ -541,7 +640,13 @@ delbtn.addEventListener('click', () => {
 
 okbtn.addEventListener('click', () => {
     for (let i in head.fields) {
-        head.fields[i] = document.getElementById(`input${i}`).value == '' ? '-' : document.getElementById(`input${i}`).value;
+        if (document.getElementById(`input${i}`)) {
+            head.fields[i] = document.getElementById(`input${i}`).value == '' ? '-' : document.getElementById(`input${i}`).value;
+        }
+        else {
+            head.fields[i] =  '-';
+        }
+        head.fields['id'] = alamount + 1;
     }
     modal.style.display = "none";
     tstop1.innerHTML = '';
@@ -559,8 +664,66 @@ okbtn.addEventListener('click', () => {
 clsbtn.addEventListener('click', () => {
     modal.style.display = "none";
     tstop1.innerHTML = '';
+    head.action = ''
 });
+
+// document.getElementById('givebook').addEventListener('click', () => {
+//     table = 'TakeHistory'
+//     head.table = table;
+//     head.action = "add";
+//     for (let i in head.fields) {
+//         head.fields[i] = '';
+//     }
+//     for (let i in head.fields){
+//         if (datas.includes(i)) {
+//             tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+//             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+//                 if (err) {
+//                   console.error(err.message);
+//                 }
+//             });
+//             db.serialize(() => {
+//                 db.each(`Select * from datas Where name = "${i}";`, (err, row) => {
+//                     document.getElementById(`input${i}`).innerHTML += `<option>${row.value}</option>`;
+//                 })
+//             })
+//         }
+//         else if (tables.includes(i)) {
+//             tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <select id= 'input${i}'></select></div>`;
+//             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
+//                 if (err) {
+//                   console.error(err.message);
+//                 }
+//             });
+//             db.serialize(() => {
+//                 db.each(`Select * from ${i};`, (err, row) => {
+//                     if (i == "class") {
+//                         document.getElementById(`input${i}`).innerHTML += `<option>${row.name}</option>`;
+//                     }
+//                     else if (i == "pupil") {
+//                         document.getElementById(`input${i}`).innerHTML += `<option>${row.FIO}</option>`;
+//                     }
+//                     else {
+//                         document.getElementById(`input${i}`).innerHTML += `<option>${row.id}</option>`;
+//                     }
+                    
+//                 })
+//             })
+//         }
+//         else if (i == 'id') {
+//             tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = "input${i}" value="${alamount+1}"></div>`;
+//         }
+//         else {
+//             tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = "input${i}" value="${head.fields[i]}"></div>`;
+//         }
+        
+//     }
+//     modal.style.display = "block";
+// })
+
+document.getElementById('takebook').addEventListener('click', () => {
+            
+})
 
 load();
 // ipcRenderer.send('open-file','mda');
-
