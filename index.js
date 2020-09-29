@@ -505,7 +505,7 @@ addbtn.addEventListener('click', () => {
     }
     for (let i in head.fields){
         if (datas.includes(i)) {
-            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id= 'input${i}'></div>`;
+            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = 'input${i}' list = 'options${i}'><datalist id= 'options${i}'></div>`;
             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                 if (err) {
                   console.error(err.message);
@@ -513,12 +513,12 @@ addbtn.addEventListener('click', () => {
             });
             db.serialize(() => {
                 db.each(`Select * from datas Where name = "${i}";`, (err, row) => {
-                    document.getElementById(`input${i}`).innerHTML += `<option>${row.value}</option>`;
+                    document.getElementById(`options${i}`).innerHTML += `<option>${row.value}</option>`;
                 })
             })
         }
         else if (tables.includes(i)) {
-            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id= 'input${i}'></datalist></div>`;
+            tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = 'input${i}' list = 'options${i}'><datalist id= 'options${i}'></datalist></div>`;
             let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                 if (err) {
                   console.error(err.message);
@@ -527,13 +527,13 @@ addbtn.addEventListener('click', () => {
             db.serialize(() => {
                 db.each(`Select * from ${i};`, (err, row) => {
                     if (i == "class") {
-                        document.getElementById(`input${i}`).innerHTML += `<option>${row.name}</option>`;
+                        document.getElementById(`options${i}`).innerHTML += `<option>${row.name}</option>`;
                     }
                     else if (i == "pupil") {
-                        document.getElementById(`input${i}`).innerHTML += `<option>${row.FIO}</option>`;
+                        document.getElementById(`options${i}`).innerHTML += `<option>${row.FIO}</option>`;
                     }
                     else {
-                        document.getElementById(`input${i}`).innerHTML += `<option>${row.id}</option>`;
+                        document.getElementById(`options${i}`).innerHTML += `<option>${row.id}</option>`;
                     }
                     
                 })
@@ -579,7 +579,7 @@ chgbtn.addEventListener('click', () => {
         head.oldid = head.fields.id;
         for (let i in head.fields){
             if (datas.includes(i)) {
-                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'><datalist id = 'input${i}'></datalist></div>`;
+                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = 'input${i}' list = 'options${i}'><datalist id = 'options${i}'></datalist></div>`;
                 let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                     if (err) {
                       console.error(err.message);
@@ -587,12 +587,12 @@ chgbtn.addEventListener('click', () => {
                 });
                 db.serialize(() => {
                     db.each(`Select * from datas Where name = "${i}";`, (err, row) => {
-                        document.getElementById(`input${i}`).innerHTML += `<option>${row.value}</option>`;
+                        document.getElementById(`options${i}`).innerHTML += `<option>${row.value}</option>`;
                     })
                 })
             }
             else if (tables.includes(i)) {
-                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input list = 'input${i}'> <datalist id= 'input${i}'></datalist></div>`;
+                tstop1.innerHTML += `<div id="div${i}">${assoc[i]}: <input id = 'input${i}' list = 'options${i}'> <datalist id= 'options${i}'></datalist></div>`;
                 let db = new sqlite3.Database('sqlite.db', sqlite3.OPEN_READWRITE, (err) => {
                     if (err) {
                       console.error(err.message);
@@ -601,13 +601,13 @@ chgbtn.addEventListener('click', () => {
                 db.serialize(() => {
                     db.each(`Select * from ${i};`, (err, row) => {
                         if (i == "class") {
-                            document.getElementById(`input${i}`).innerHTML += `<option>${row.name}</option>`;
+                            document.getElementById(`options${i}`).innerHTML += `<option>${row.name}</option>`;
                         }
                         else if (i == "pupil") {
-                            document.getElementById(`input${i}`).innerHTML += `<option>${row.FIO}</option>`;
+                            document.getElementById(`options${i}`).innerHTML += `<option>${row.FIO}</option>`;
                         }
                         else {
-                            document.getElementById(`input${i}`).innerHTML += `<option>${row.id}</option>`;
+                            document.getElementById(`options${i}`).innerHTML += `<option>${row.id}</option>`;
                         }
                         
                     })
@@ -648,6 +648,7 @@ okbtn.addEventListener('click', () => {
         }
         head.fields['id'] = alamount + 1;
     }
+    console.log(head)
     modal.style.display = "none";
     tstop1.innerHTML = '';
     load();
