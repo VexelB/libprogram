@@ -474,14 +474,14 @@ addbtn.addEventListener('click', () => {
                     if (row.own == '0') {
                         document.getElementById('inputinvid').value = row.id;
                         document.getElementById('inputname').value = row.name;
-                        document.getElementById('inputwwhen').value = `${d.getDate()}.${d.getMonth()}.${d.getFullYear()}`
+                        document.getElementById('inputwwhen').value = `${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}`
                         let d2 = new Date(Date.parse(d)+1209600033)
-                        document.getElementById('inputqwhen').value = `${d2.getDate()}.${d2.getMonth()}.${d2.getFullYear()}`
+                        document.getElementById('inputqwhen').value = `${d2.getDate()}.${d2.getMonth()+1}.${d2.getFullYear()}`
                         db.run(`UPDATE books SET own = "1" WHERE id = ${code.data}`)
                     }
                     else {
                         db.run(`UPDATE books SET own = "0" WHERE id = ${code.data}`)
-                        db.run(`UPDATE TakeHistory SET return = "${d.getDate()}.${d.getMonth()}.${d.getFullYear()}" WHERE invid = ${code.data}`)
+                        db.run(`UPDATE TakeHistory SET return = "${d.getDate()}.${d.getMonth()+1}.${d.getFullYear()}" WHERE invid = ${code.data}`)
                         clsbtn.click();
                         load()
                         alert('Книга сдана')
@@ -646,7 +646,7 @@ okbtn.addEventListener('click', () => {
         else {
             head.fields[i] =  '-';
         }
-        head.fields['id'] = alamount + 1;
+        // head.fields['id'] = alamount + 1;
     }
     console.log(head)
     modal.style.display = "none";
