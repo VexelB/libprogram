@@ -291,7 +291,11 @@ function load() {
         }
         else {
             alamount = 0;
-            db.each(`SELECT * from ${table} LIMIT 50`, (err, row) => {
+            let sql = `SELECT * from ${table} LIMIT 50`
+            if (table == 'TakeHistory') {
+                sql = `SELECT * from ${table}`
+            }
+            db.each(sql, (err, row) => {
                 alamount += 1;
                 if (err) {
                 console.error(err);
